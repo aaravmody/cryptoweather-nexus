@@ -23,15 +23,19 @@ const initialState: NewsState = {
   error: null,
 };
 
-export const fetchNewsData = createAsyncThunk(
-  'news/fetchNewsData',
-  async () => {
+export const fetchNewsData = createAsyncThunk('news/fetchNewsData', async () => {
+  try {
     const response = await axios.get(
       `https://newsdata.io/api/1/news?apikey=${process.env.NEXT_PUBLIC_NEWSDATA_API_KEY}&q=cryptocurrency&language=en`
     );
     return response.data.results;
+  } catch (error) {
+    if (error instanceof Error) {
+      throw new Error(error.message);
+    }
+    throw new Error('Failed to fetch news data');
   }
-);
+});
 
 const newsSlice = createSlice({
   name: 'news',

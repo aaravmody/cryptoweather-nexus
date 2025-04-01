@@ -27,12 +27,19 @@ const initialState: CryptoState = {
 export const fetchCryptoData = createAsyncThunk(
   'crypto/fetchCryptoData',
   async (cryptoIds: string[]) => {
-    const response = await axios.get(
-      `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cryptoIds.join(
-        ','
-      )}&order=market_cap_desc&per_page=100&page=1&sparkline=false`
-    );
-    return response.data;
+    try {
+      const response = await axios.get(
+        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cryptoIds.join(
+          ','
+        )}&order=market_cap_desc&per_page=100&page=1&sparkline=false`
+      );
+      return response.data;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error('Failed to fetch crypto data');
+    }
   }
 );
 
@@ -47,7 +54,10 @@ const cryptoSlice = createSlice({
       const { id, price } = action.payload;
       const crypto = state.data.find((c) => c.id === id);
       if (crypto) {
+        const oldPrice = crypto.current_price;
         crypto.current_price = price;
+        crypto.price_change_percentage_24h =
+          ((price - oldPrice) / oldPrice) * 100;
       }
     },
   },

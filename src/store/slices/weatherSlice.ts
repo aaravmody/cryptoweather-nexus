@@ -24,21 +24,28 @@ const initialState: WeatherState = {
 export const fetchWeatherData = createAsyncThunk(
   'weather/fetchWeatherData',
   async (cities: string[]) => {
-    const weatherData = await Promise.all(
-      cities.map(async (city) => {
-        const response = await axios.get(
-          `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
-        );
-        return {
-          city,
-          temperature: response.data.main.temp,
-          humidity: response.data.main.humidity,
-          conditions: response.data.weather[0].description,
-          icon: response.data.weather[0].icon,
-        };
-      })
-    );
-    return weatherData;
+    try {
+      const weatherData = await Promise.all(
+        cities.map(async (city) => {
+          const response = await axios.get(
+            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
+          );
+          return {
+            city,
+            temperature: response.data.main.temp,
+            humidity: response.data.main.humidity,
+            conditions: response.data.weather[0].description,
+            icon: response.data.weather[0].icon,
+          };
+        })
+      );
+      return weatherData;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(error.message);
+      }
+      throw new Error('Failed to fetch weather data');
+    }
   }
 );
 

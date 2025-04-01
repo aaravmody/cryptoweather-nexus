@@ -22,7 +22,9 @@ export function WeatherSection() {
   if (error) {
     return (
       <div className="text-red-500 dark:text-red-400 text-center py-4">
-        {error}
+        <p className="font-semibold">Error loading weather data</p>
+        <p className="text-sm mt-1">{error}</p>
+        <p className="text-sm mt-2">Please check your OpenWeather API key configuration</p>
       </div>
     );
   }
@@ -30,7 +32,8 @@ export function WeatherSection() {
   if (!weatherData || weatherData.length === 0) {
     return (
       <div className="text-gray-500 dark:text-gray-400 text-center py-4">
-        No weather data available
+        <p>No weather data available</p>
+        <p className="text-sm mt-1">Please check your OpenWeather API key configuration</p>
       </div>
     );
   }

@@ -4,6 +4,15 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import Link from 'next/link';
 
+interface NewsItem {
+  url: string;
+  title: string;
+  description: string;
+  image_url: string;
+  source_id: string;
+  pubDate: string;
+}
+
 export function NewsSection() {
   const { data: newsData, loading, error } = useSelector(
     (state: RootState) => state.news
@@ -37,10 +46,10 @@ export function NewsSection() {
 
   return (
     <div className="space-y-4">
-      {newsData.map((news) => (
+      {newsData.map((news: NewsItem) => (
         <Link
           key={news.url}
-          href={news.url}
+          href={news.url || '#'}
           target="_blank"
           rel="noopener noreferrer"
           className="block bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"

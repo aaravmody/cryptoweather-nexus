@@ -1,20 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-interface NewsData {
-  id: string;
+interface NewsItem {
+  url: string;
   title: string;
   description: string;
-  url: string;
   image_url: string;
-  published_at: string;
-  source: {
-    name: string;
-  };
+  source_id: string;
+  pubDate: string;
 }
 
 interface NewsState {
-  data: NewsData[] | null;
+  data: NewsItem[] | null;
   loading: boolean;
   error: string | null;
 }
@@ -29,12 +26,27 @@ export const fetchNewsData = createAsyncThunk(
   'news/fetchNewsData',
   async (keywords: string[] = ['cryptocurrency', 'weather']) => {
     const apiKey = process.env.NEXT_PUBLIC_NEWSDATA_API_KEY;
+    if (!apiKey) {
+      throw new Error('NewsData API key is not configured');
+    }
     const response = await axios.get(
       `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${keywords.join(
         ' OR '
       )}&language=en&category=technology,business`
     );
-    return response.data.results;
+    
+    if (!response.data || !response.data.results) {
+      throw new Error('Invalid response from NewsData API');
+    }
+
+    return response.data.results.map((item: any) => ({
+      url: item.link || '#',
+      title: item.title || 'No title',
+      description: item.description || 'No description available',
+      image_url: item.image_url || '',
+      source_id: item.source_id || 'Unknown source',
+      pubDate: item.pubDate || new Date().toISOString(),
+    }));
   }
 );
 

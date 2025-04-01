@@ -4,6 +4,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_OPENWEATHER_API_KEY: process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY,
     NEXT_PUBLIC_NEWSDATA_API_KEY: process.env.NEXT_PUBLIC_NEWSDATA_API_KEY,
+    NEXT_PUBLIC_COINGECKO_API_KEY: process.env.NEXT_PUBLIC_COINGECKO_API_KEY,
   },
   webpack: (config) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };

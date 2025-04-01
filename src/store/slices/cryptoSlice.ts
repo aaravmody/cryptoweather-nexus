@@ -14,37 +14,53 @@ interface CryptoData {
   };
 }
 
+interface CryptoHistory {
+  prices: [number, number][];
+  market_caps: [number, number][];
+  total_volumes: [number, number][];
+}
+
 interface CryptoState {
   data: CryptoData[];
+  history: Record<string, CryptoHistory>;
   loading: boolean;
   error: string | null;
   websocketConnected: boolean;
-  history: {
-    [key: string]: any;
-  };
 }
 
 const initialState: CryptoState = {
   data: [],
+  history: {},
   loading: false,
   error: null,
   websocketConnected: false,
-  history: {},
 };
 
 export const fetchCryptoData = createAsyncThunk(
-  'crypto/fetchData',
+  'crypto/fetchCryptoData',
   async (ids: string[]) => {
-    const data = await cryptoApi.getCryptoData(ids);
-    return data;
+    try {
+      return await cryptoApi.getCryptoData(ids);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to fetch crypto data: ${error.message}`);
+      }
+      throw new Error('Failed to fetch crypto data');
+    }
   }
 );
 
 export const fetchCryptoHistory = createAsyncThunk(
-  'crypto/fetchHistory',
-  async ({ id, days }: { id: string; days: number }) => {
-    const data = await cryptoApi.getCryptoHistory(id, days);
-    return data;
+  'crypto/fetchCryptoHistory',
+  async (id: string) => {
+    try {
+      return await cryptoApi.getCryptoHistory(id);
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to fetch crypto history: ${error.message}`);
+      }
+      throw new Error('Failed to fetch crypto history');
+    }
   }
 );
 

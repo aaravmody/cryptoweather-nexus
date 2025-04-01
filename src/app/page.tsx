@@ -17,7 +17,7 @@ export default function HomePage() {
   useEffect(() => {
     dispatch(fetchWeatherData(['London', 'New York', 'Tokyo']));
     dispatch(fetchCryptoData(['bitcoin', 'ethereum', 'cardano']));
-    dispatch(fetchNewsData());
+    dispatch(fetchNewsData(['cryptocurrency', 'weather']));
   }, [dispatch]);
 
   return (

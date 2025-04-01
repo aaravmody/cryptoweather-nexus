@@ -104,7 +104,7 @@ const cryptoSlice = createSlice({
         state.loading = false;
         state.history = {
           ...state.history,
-          [action.meta.arg.id]: action.payload
+          [action.meta.arg]: action.payload
         };
       })
       .addCase(fetchCryptoHistory.rejected, (state, action) => {

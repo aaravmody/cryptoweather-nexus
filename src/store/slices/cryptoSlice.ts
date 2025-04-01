@@ -1,13 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { cryptoApi } from '@/services/api';
 
 interface CryptoData {
   id: string;
   name: string;
   symbol: string;
+  image: string;
   current_price: number;
   price_change_percentage_24h: number;
   market_cap: number;
+  sparkline_in_7d: {
+    price: number[];
+  };
 }
 
 interface CryptoState {
@@ -15,6 +19,9 @@ interface CryptoState {
   loading: boolean;
   error: string | null;
   websocketConnected: boolean;
+  history: {
+    [key: string]: any;
+  };
 }
 
 const initialState: CryptoState = {
@@ -22,24 +29,22 @@ const initialState: CryptoState = {
   loading: false,
   error: null,
   websocketConnected: false,
+  history: {},
 };
 
 export const fetchCryptoData = createAsyncThunk(
-  'crypto/fetchCryptoData',
-  async (cryptoIds: string[]) => {
-    try {
-      const response = await axios.get(
-        `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${cryptoIds.join(
-          ','
-        )}&order=market_cap_desc&per_page=100&page=1&sparkline=false`
-      );
-      return response.data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(error.message);
-      }
-      throw new Error('Failed to fetch crypto data');
-    }
+  'crypto/fetchData',
+  async (ids: string[]) => {
+    const data = await cryptoApi.getCryptoData(ids);
+    return data;
+  }
+);
+
+export const fetchCryptoHistory = createAsyncThunk(
+  'crypto/fetchHistory',
+  async ({ id, days }: { id: string; days: number }) => {
+    const data = await cryptoApi.getCryptoHistory(id, days);
+    return data;
   }
 );
 
@@ -74,6 +79,21 @@ const cryptoSlice = createSlice({
       .addCase(fetchCryptoData.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || 'Failed to fetch crypto data';
+      })
+      .addCase(fetchCryptoHistory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCryptoHistory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.history = {
+          ...state.history,
+          [action.meta.arg.id]: action.payload
+        };
+      })
+      .addCase(fetchCryptoHistory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch crypto history';
       });
   },
 });

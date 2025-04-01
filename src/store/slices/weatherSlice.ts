@@ -2,21 +2,28 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 interface WeatherData {
-  city: string;
-  temperature: number;
-  humidity: number;
-  conditions: string;
-  icon: string;
+  id: number;
+  name: string;
+  main: {
+    temp: number;
+    humidity: number;
+    pressure: number;
+  };
+  weather: Array<{
+    main: string;
+    description: string;
+    icon: string;
+  }>;
 }
 
 interface WeatherState {
-  data: WeatherData[];
+  data: WeatherData[] | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: WeatherState = {
-  data: [],
+  data: null,
   loading: false,
   error: null,
 };
@@ -24,28 +31,14 @@ const initialState: WeatherState = {
 export const fetchWeatherData = createAsyncThunk(
   'weather/fetchWeatherData',
   async (cities: string[]) => {
-    try {
-      const weatherData = await Promise.all(
-        cities.map(async (city) => {
-          const response = await axios.get(
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY}&units=metric`
-          );
-          return {
-            city,
-            temperature: response.data.main.temp,
-            humidity: response.data.main.humidity,
-            conditions: response.data.weather[0].description,
-            icon: response.data.weather[0].icon,
-          };
-        })
-      );
-      return weatherData;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(error.message);
-      }
-      throw new Error('Failed to fetch weather data');
-    }
+    const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
+    const promises = cities.map((city) =>
+      axios.get(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+      )
+    );
+    const responses = await Promise.all(promises);
+    return responses.map((response) => response.data);
   }
 );
 

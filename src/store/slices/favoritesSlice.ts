@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface FavoritesState {
-  favoriteCities: string[];
-  favoriteCryptos: string[];
+  cities: string[];
+  cryptos: string[];
 }
 
 const initialState: FavoritesState = {
-  favoriteCities: [],
-  favoriteCryptos: [],
+  cities: ['New York', 'London', 'Tokyo'],
+  cryptos: ['bitcoin', 'ethereum', 'solana'],
 };
 
 const favoritesSlice = createSlice({
@@ -16,27 +16,37 @@ const favoritesSlice = createSlice({
   reducers: {
     toggleFavoriteCity: (state, action: PayloadAction<string>) => {
       const city = action.payload;
-      const index = state.favoriteCities.indexOf(city);
+      const index = state.cities.indexOf(city);
       if (index === -1) {
-        state.favoriteCities.push(city);
+        state.cities.push(city);
       } else {
-        state.favoriteCities.splice(index, 1);
+        state.cities.splice(index, 1);
       }
     },
     toggleFavoriteCrypto: (state, action: PayloadAction<string>) => {
       const crypto = action.payload;
-      const index = state.favoriteCryptos.indexOf(crypto);
+      const index = state.cryptos.indexOf(crypto);
       if (index === -1) {
-        state.favoriteCryptos.push(crypto);
+        state.cryptos.push(crypto);
       } else {
-        state.favoriteCryptos.splice(index, 1);
+        state.cryptos.splice(index, 1);
       }
     },
-    setFavoriteCities: (state, action: PayloadAction<string[]>) => {
-      state.favoriteCities = action.payload;
+    addCity: (state, action: PayloadAction<string>) => {
+      if (!state.cities.includes(action.payload)) {
+        state.cities.push(action.payload);
+      }
     },
-    setFavoriteCryptos: (state, action: PayloadAction<string[]>) => {
-      state.favoriteCryptos = action.payload;
+    removeCity: (state, action: PayloadAction<string>) => {
+      state.cities = state.cities.filter(city => city !== action.payload);
+    },
+    addCrypto: (state, action: PayloadAction<string>) => {
+      if (!state.cryptos.includes(action.payload)) {
+        state.cryptos.push(action.payload);
+      }
+    },
+    removeCrypto: (state, action: PayloadAction<string>) => {
+      state.cryptos = state.cryptos.filter(crypto => crypto !== action.payload);
     },
   },
 });
@@ -44,8 +54,10 @@ const favoritesSlice = createSlice({
 export const {
   toggleFavoriteCity,
   toggleFavoriteCrypto,
-  setFavoriteCities,
-  setFavoriteCryptos,
+  addCity,
+  removeCity,
+  addCrypto,
+  removeCrypto,
 } = favoritesSlice.actions;
 
 export default favoritesSlice.reducer; 

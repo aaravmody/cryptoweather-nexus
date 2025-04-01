@@ -1,41 +1,42 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-interface NewsItem {
+interface NewsData {
+  id: string;
   title: string;
   description: string;
   url: string;
-  publishedAt: string;
+  image_url: string;
+  published_at: string;
   source: {
     name: string;
   };
 }
 
 interface NewsState {
-  data: NewsItem[];
+  data: NewsData[] | null;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: NewsState = {
-  data: [],
+  data: null,
   loading: false,
   error: null,
 };
 
-export const fetchNewsData = createAsyncThunk('news/fetchNewsData', async () => {
-  try {
+export const fetchNewsData = createAsyncThunk(
+  'news/fetchNewsData',
+  async (keywords: string[] = ['cryptocurrency', 'weather']) => {
+    const apiKey = process.env.NEXT_PUBLIC_NEWSDATA_API_KEY;
     const response = await axios.get(
-      `https://newsdata.io/api/1/news?apikey=${process.env.NEXT_PUBLIC_NEWSDATA_API_KEY}&q=cryptocurrency&language=en`
+      `https://newsdata.io/api/1/news?apikey=${apiKey}&q=${keywords.join(
+        ' OR '
+      )}&language=en&category=technology,business`
     );
     return response.data.results;
-  } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(error.message);
-    }
-    throw new Error('Failed to fetch news data');
   }
-});
+);
 
 const newsSlice = createSlice({
   name: 'news',

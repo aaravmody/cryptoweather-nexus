@@ -1,93 +1,72 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { fetchWeatherData } from '@/store/slices/weatherSlice';
-import { toggleFavoriteCity } from '@/store/slices/favoritesSlice';
-import { StarIcon } from '@heroicons/react/24/outline';
-import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 
-const DEFAULT_CITIES = ['New York', 'London', 'Tokyo'];
-
-export default function WeatherSection() {
-  const dispatch = useDispatch();
-  const { data: weatherData, loading, error } = useSelector((state: RootState) => state.weather);
-  const favoriteCities = useSelector((state: RootState) => state.favorites.favoriteCities);
-
-  useEffect(() => {
-    dispatch(fetchWeatherData(DEFAULT_CITIES) as any);
-    const interval = setInterval(() => {
-      dispatch(fetchWeatherData(DEFAULT_CITIES) as any);
-    }, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [dispatch]);
-
-  const handleToggleFavorite = (city: string) => {
-    dispatch(toggleFavoriteCity(city));
-  };
+export function WeatherSection() {
+  const { data: weatherData, loading, error } = useSelector(
+    (state: RootState) => state.weather
+  );
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Weather</h2>
-        <div className="animate-pulse space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-gray-200 dark:bg-gray-700 rounded" />
-          ))}
-        </div>
+      <div className="animate-pulse space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+        ))}
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Weather</h2>
-        <div className="text-red-500 dark:text-red-400">{error}</div>
+      <div className="text-red-500 dark:text-red-400 text-center py-4">
+        {error}
+      </div>
+    );
+  }
+
+  if (!weatherData || weatherData.length === 0) {
+    return (
+      <div className="text-gray-500 dark:text-gray-400 text-center py-4">
+        No weather data available
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Weather</h2>
-      <div className="space-y-4">
-        {weatherData.map((weather) => (
-          <Link
-            key={weather.city}
-            href={`/weather/${encodeURIComponent(weather.city)}`}
-            className="block"
-          >
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">{weather.city}</h3>
-                <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-300">
-                  <span>{Math.round(weather.temperature)}°C</span>
-                  <span>|</span>
-                  <span>{weather.humidity}% humidity</span>
-                </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{weather.conditions}</p>
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleToggleFavorite(weather.city);
-                }}
-                className="text-gray-400 hover:text-yellow-500 focus:outline-none"
-              >
-                {favoriteCities.includes(weather.city) ? (
-                  <StarIconSolid className="h-6 w-6 text-yellow-500" />
-                ) : (
-                  <StarIcon className="h-6 w-6" />
-                )}
-              </button>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {weatherData.map((city) => (
+        <Link
+          key={city.name}
+          href={`/city/${city.name}`}
+          className="block bg-gray-50 dark:bg-gray-700 rounded-lg p-4 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200"
+        >
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {city.name}
+            </h3>
+            <img
+              src={`http://openweathermap.org/img/wn/${city.weather[0].icon}@2x.png`}
+              alt={city.weather[0].description}
+              className="w-12 h-12"
+            />
+          </div>
+          <div className="mt-2 space-y-1">
+            <p className="text-2xl font-bold text-gray-900 dark:text-white">
+              {Math.round(city.main.temp)}°C
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {city.weather[0].description}
+            </p>
+            <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span>Humidity: {city.main.humidity}%</span>
+              <span>Wind: {city.wind.speed} m/s</span>
             </div>
-          </Link>
-        ))}
-      </div>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 } 
